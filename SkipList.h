@@ -91,7 +91,7 @@ class SkipList
     
     private:
         void get_key_value_from_string(const std::string& str, std::string* key, std::string* value);
-        bool is_valid(const std::string& str);
+        bool is_valid_string(const std::string& str);
 
     private:
         int m_max_level;
@@ -265,9 +265,58 @@ void SkipList< K, V >::dump_file()
     while(node)
     {
         m_file_writer << node->get_key() << ":" << node->get_value() << "\n";
-        
+        std::cout << node->get_key() << ":" << node->get_value() << ";\n";
         node = node->forward[0];
     }
+    m_file_writer.flush();
+    m_file_writer.close();
 }
 
+template< typename K, typename V >
+void SkipList< K, V >::load_file()
+{
+    m_file_reader.open(STORE_FILE);
+    std::cout << "load_file-----------------" << std::endl;
+    std::string line;
+    std::string* key = new std::string();
+    std::string* value = new std::string();
+    while (getline(_file_reader, line)) {
+        get_key_value_from_string(line, key, value);
+        if (key->empty() || value->empty()) {
+            continue;
+        }
+        insert_element(*key, *value);
+        std::cout << "key:" << *key << "value:" << *value << std::endl;
+    }
+    m_file_reader.close();
+}
+
+template< typename K, typename V >
+int SkipList< K, V >::size()
+{
+    return m_element_count;
+}
+
+template<typename K, typename V>
+void SkipList<K, V>::get_key_value_from_string(const std::string& str, std::string* key, std::string* value)
+{
+    if(!is_valid_string(str)) {
+        return;
+    }
+    *key = str.substr(0, str.find(delimiter));
+    *value = str.substr(str.find(delimiter)+1, str.length());
+}
+
+template<typename K, typename V>
+bool SkipList<K, V>::is_valid_string(const std::string& str)
+{
+
+    if (str.empty()) {
+        return false;
+    }
+    if (str.find(delimiter) == std::string::npos) {
+        return false;
+    }
+    return true;
+}
 #endif
