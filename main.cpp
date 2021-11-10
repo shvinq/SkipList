@@ -1,5 +1,5 @@
 #include <iostream>
-#include "skiplist.h"
+#include "SkipList.h"
 #define FILE_PATH "./store/dumpFile"
 
 int main() {
@@ -23,12 +23,12 @@ int main() {
     skipList.search_element(18);
 
 
-    skipList.display_list();
+    skipList.display();
 
     skipList.delete_element(3);
     skipList.delete_element(7);
 
     std::cout << "skipList size:" << skipList.size() << std::endl;
 
-    skipList.display_list();
+    skipList.display();
 }

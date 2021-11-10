@@ -3,9 +3,7 @@
 一个基于跳表实现的轻量简易版K-V键值型数据库。
 
 实现效果如下图：
-![image.png](https://i.loli.net/2021/11/10/OHc5NEdo3IjU9Xx.png)
-
-
+![image.png](https://i.loli.net/2021/11/10/DkR1xCVAdhqGi9H.png)
 
 参考项目：
 

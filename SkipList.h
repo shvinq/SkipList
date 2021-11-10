@@ -39,8 +39,11 @@ class Node
 
 
 template< typename K, typename V >
-Node< K, V>::Node(const K k, const V v, int level) : key(k), value(v), node_level(level)
+Node< K, V>::Node(const K k, const V v, int level) 
 {
+    this->key = k;
+    this->value = v;
+    this->node_level = level; 
     this->forward = new Node< K, V >*[level + 1];
     memset(this->forward, 0, sizeof(Node< K, V >*) * (level + 1));
 }
@@ -52,13 +55,13 @@ Node< K, V >::~Node()
 }
 
 template< typename K, typename V >
-inline K Node< K, V >::get_key() const
+K Node< K, V >::get_key() const
 {
     return key;
 }
 
 template< typename K, typename V >
-inline V Node< K, V >::get_value() const
+V Node< K, V >::get_value() const
 {
     return value;
 }
@@ -123,13 +126,20 @@ SkipList< K, V >::~SkipList()
 {
     if(m_file_writer.is_open()) m_file_writer.close();
     if(m_file_reader.is_open()) m_file_reader.close();
+    Node< K, V > *current = m_header->forward[0];
+    while(current)
+    {
+        Node< K, V > *tmp = current;
+        current = tmp->forward[0];
+        delete tmp;
+    }
     delete m_header;
 }
 
 template< typename K, typename V >
 int SkipList< K, V >::get_random_level()
 {
-    int k = 1;
+    int k = 0;
     while(rand() % 2) k++;
     k = (k < m_max_level) ? k : m_max_level;
     return k;
@@ -139,7 +149,7 @@ template< typename K, typename V >
 Node< K, V >* SkipList< K, V >::create_node(const K k, const V v, int level)
 {
     Node< K, V > *n = new Node< K, V >(k, v, level);
-    return v;
+    return n;
 }
 
 template< typename K, typename V >
@@ -154,7 +164,9 @@ int SkipList< K, V >::insert_element(const K key, const V value)
     for(int i = m_skip_list_level; i >= 0; i--)
     {
         while(current->forward[i] != NULL && current->forward[i]->get_key() < key)
+        {
             current = current->forward[i];
+        }
         update[i] = current;
     }
 
@@ -171,7 +183,7 @@ int SkipList< K, V >::insert_element(const K key, const V value)
         int random_level = get_random_level();
         if(random_level > m_skip_list_level)
         {
-            for(int i = m_skip_list_level + 1; i < random_level; i++) update[i] = m_header;
+            for(int i = m_skip_list_level + 1; i < random_level + 1; i++) update[i] = m_header;
             m_skip_list_level = random_level;
         }
 
@@ -212,7 +224,7 @@ bool SkipList< K, V >::search_element(K key)
     Node< K, V >* current = this->m_header;
     for(int i = m_skip_list_level; i >= 0; i--)
     {
-        while(current != NULL && current->forward[i]->get_key() < key) current = current->forward[i];
+        while(current->forward[i] != NULL && current->forward[i]->get_key() < key) current = current->forward[i];
     }
 
     current = current->forward[0];
@@ -247,7 +259,7 @@ void  SkipList< K, V >::delete_element(K key)
             if(update[i]->forward[i] != current) break;
             update[i]->forward[i] = current->forward[i];
         }
-        while(m_skip_list_level > 0 && m_header[m_skip_list_level] == 0) m_skip_list_level--;
+        while(m_skip_list_level > 0 && m_header->forward[m_skip_list_level] == 0) m_skip_list_level--;
         std::cout << "Successfully deleted key " << key << std::endl;
         m_element_count--;
     }
@@ -280,7 +292,7 @@ void SkipList< K, V >::load_file()
     std::string line;
     std::string* key = new std::string();
     std::string* value = new std::string();
-    while (getline(_file_reader, line)) {
+    while (getline(m_file_reader, line)) {
         get_key_value_from_string(line, key, value);
         if (key->empty() || value->empty()) {
             continue;
